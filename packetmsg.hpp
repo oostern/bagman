@@ -111,7 +111,7 @@ public:
       noise_photons.push_back(block_noise_photons);
 
       azimuth_data_block_status.push_back(
-          !!decoded[(azimuth_block * 788) + 196]);
+          !!decoded[(azimuth_block * 788) + 784]);
     }
   }
 
