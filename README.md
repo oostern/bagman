@@ -90,10 +90,12 @@ roscore
 
 In a second terminal, begin the playback of the rosbag
 ```
-rosbag play path/to/some/rosbag.bag --pause
+rosbag play path/to/some/rosbag.bag --pause -r 0.1
 ```
 Including `--pause` prevents the bag from playing immediately.
 Press space to unpause and begin playing.
+
+The `-r 0.1` limits the bag playback to 1/10th of real-time. This may be necessary to prevent packets from being dropped. 
 
 In a third terminal you can check that the topics are available
 ```
