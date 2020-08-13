@@ -4,7 +4,7 @@ A small bit of code to allow Ouster OS1 data to be exported from ROS to an exter
 It should be modifiable to fit any ROS topic you want to make available to some external (potentially remote) process, though I don't claim that this is the most efficient way of doing so.*
 
 
-These instructions are for Ubuntu 18.04. Older versions of Ubuntu should work, but 20.04 is not supported, as there is no release of rosbridge for Noetic (the ROS version corresponding to 20.04).
+These instructions are for Ubuntu 18.04, or 20.04 as noted. Melodic is the release name for 18.04, and Noetic is the release for 20.04. Anywhere `melodic` is used in a command substitute `noetic` or whatever the appropriate name is which corresponds to your distribution.
 
 This repo includes modified code from [easywsclient](https://github.com/dhbaird/easywsclient), which was published under the MIT license.
 A copy of the copyright notice and license is available in the `easyws` directory.
@@ -40,12 +40,17 @@ echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
 source ~/.bashrc
 ```
 
+For Ubuntu 18.04:
 ```
 sudo apt install python-rosdep python-rosinstall python-rosinstall-generator python-wstool build-essential
 ```
 
+For Ubuntu 20.04:
 ```
-sudo apt install python-rosdep
+sudo apt install python3-rosdep python3-rosinstall python3-rosinstall-generator python3-wstool build-essential
+```
+
+```
 sudo rosdep init
 rosdep update
 ```
@@ -64,7 +69,7 @@ export CMAKE_PREFIX_PATH=path/to/ouster_example
 Note that `path/to/ouster_example` is where you cloned the repo
 
 ```
-mkdir -p myworkspace/src && cd myworkspace && ln -s /path/to/ouster_example ./src/ && catkin_make -DCMAKE_BUILD_TYPE=Release
+mkdir -p myworkspace/src && cd myworkspace && ln -s /absolute/path/to/ouster_example ./src/ && catkin_make -DCMAKE_BUILD_TYPE=Release
 ```
 
 ```
@@ -95,7 +100,7 @@ rosbag play path/to/some/rosbag.bag --pause -r 0.1
 Including `--pause` prevents the bag from playing immediately.
 Press space to unpause and begin playing.
 
-The `-r 0.1` limits the bag playback to 1/10th of real-time. This may be necessary to prevent packets from being dropped. 
+The `-r 0.1` limits the bag playback to 1/10th of real-time. This may be necessary to prevent packets from being dropped.
 
 In a third terminal you can check that the topics are available
 ```
@@ -120,6 +125,15 @@ The default configuration opens the websocket on port 9090, which is precofigure
 Finally, you can launch the client app
 ```
 ./bagman.elf
+```
+
+## Troubleshooting
+
+If something fails it's probably due to the setup files not being sourced; try re-opening the shell, or source them manually:
+
+```
+source /opt/ros/melodic/setup.bash
+source path/to/myworkspace/devel/setup.bash
 ```
 
 *I didn't try to understand how ROS works, I just needed to do this thing, so some steps may be unnecessary or inefficient

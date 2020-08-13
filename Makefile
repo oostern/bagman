@@ -2,7 +2,7 @@ CXX=g++
 CXXFLAGS=-std=c++14 -O3 -Wall -Werror
 CXXINCLUDE=-I /usr/include -I.
 
-.DEFAULT_GOAL=bagman.elf 
+.DEFAULT_GOAL=bagman.elf
 
 DEPS=easyws/easywsclient.hpp
 
@@ -13,7 +13,7 @@ OBJS=$(DEPS:%.hpp=%.o)
 %.o: %.cpp $(DEPS)
 	@$(CXX) $(CXXFLAGS) -c -o $@ $< $(LDFLAGS) $(LDLIBS)
 
-%.elf: %.cc $(OBJS) 
+%.elf: %.cc $(OBJS)
 	@$(CXX) $(CXXFLAGS) $(CXXINCLUDE) -o $@ $< $(OBJS) $(LDFLAGS) $(LDLIBS)
 
 all: bagman.elf

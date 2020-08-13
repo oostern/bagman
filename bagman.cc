@@ -1,8 +1,10 @@
 #include "packetmsg.hpp"
+#include "navsatfixmsg.hpp"
 
 #include <easyws/easywsclient.hpp>
 
 #include <iostream>
+#include <iomanip>
 #include <string>
 
 int main(int argc, char* argv[])
@@ -11,8 +13,10 @@ int main(int argc, char* argv[])
     imu_socket(easywsclient::websocket::from_url("ws://localhost:9090/"));
   easywsclient::websocket::pointer
     lidar_socket(easywsclient::websocket::from_url("ws://localhost:9090/"));
+  easywsclient::websocket::pointer
+    gnss_socket(easywsclient::websocket::from_url("ws://localhost:9090/"));
 
-  if (!imu_socket || !lidar_socket)
+  if (!imu_socket || !lidar_socket || !gnss_socket)
   {
     std::cerr << "Failed to open websocket connection" << std::endl;
     exit(1);
@@ -22,15 +26,20 @@ int main(int argc, char* argv[])
       \"/os1_node/imu_packets\",\"type\":\"ouster_ros/PacketMsg\"}");
   lidar_socket->send("{\"op\":\"subscribe\",\"topic\": \
       \"/os1_node/lidar_packets\",\"type\":\"ouster_ros/PacketMsg\"}");
+  gnss_socket->send("{\"op\":\"subscribe\",\"topic\": \
+      \"/mavros/global_position/global\",\"type\":\"sensor_msgs/NavSatFix\"}");
 
   imu_packetmsg imu_data;
   lidar_packetmsg lidar_data;
+  navsatfixmsg gnss_data;
 
   while (imu_socket->getReadyState() != easywsclient::websocket::CLOSED
-      && lidar_socket->getReadyState() != easywsclient::websocket::CLOSED)
+      && lidar_socket->getReadyState() != easywsclient::websocket::CLOSED
+      && gnss_socket->getReadyState() != easywsclient::websocket::CLOSED)
   {
     bool imu_updated = false;
     bool lidar_updated = false;
+    bool gnss_updated = false;
 
     imu_socket->poll();
     imu_socket->dispatch([imu_socket, &imu_data, &imu_updated]
@@ -48,6 +57,13 @@ int main(int argc, char* argv[])
           lidar_data = lidar_packetmsg(message);
         });
 
+    gnss_socket->poll();
+    gnss_socket->dispatch([gnss_socket, &gnss_data, &gnss_updated]
+        (const std::string& message)
+        {
+          gnss_updated = true;
+          gnss_data = navsatfixmsg(message);
+        });
 
     if (imu_updated)
       std::cout << "IMU data:"
@@ -70,6 +86,26 @@ int main(int argc, char* argv[])
         << "\n  encoder count: " << lidar_data.encoder_count[0]
         << "\n  azimuth status: "
         << (lidar_data.azimuth_data_block_status[0] ? "Valid" : "Invalid")
+        << std::endl;
+
+    if (gnss_updated)
+      std::cout << "status: " << static_cast<int>(gnss_data.status)
+        << "\nservice: " << static_cast<int>(gnss_data.service)
+        << "\nlatitude: " << gnss_data.latitude
+        << "\nlongitude: " << gnss_data.longitude
+        << "\naltitude: " << gnss_data.altitude
+        << "\nENU covariance:\n"
+        << "\t"   << std::setw(8) << gnss_data.covariance[0]
+        << ", \t" << std::setw(8) << gnss_data.covariance[1]
+        << ", \t" << std::setw(8) << gnss_data.covariance[2]
+        << "\n\t" << std::setw(8) << gnss_data.covariance[3]
+        << ", \t" << std::setw(8) << gnss_data.covariance[4]
+        << ", \t" << std::setw(8) << gnss_data.covariance[5]
+        << "\n\t" << std::setw(8) << gnss_data.covariance[6]
+        << ", \t" << std::setw(8) << gnss_data.covariance[7]
+        << ", \t" << std::setw(8) << gnss_data.covariance[8]
+        << "\nPosition Covariance Type: "
+        << static_cast<int>(gnss_data.position_covariance_type)
         << std::endl;
   }
 }
