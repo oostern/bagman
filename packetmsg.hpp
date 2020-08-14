@@ -98,11 +98,11 @@ public:
         block_range_mm.push_back(*(reinterpret_cast<const uint32_t*>
               (&decoded[(azimuth_block * 788) + 16 + (pixel * 12)])));
         block_signal_photons.push_back(*(reinterpret_cast<const uint16_t*>
-              (&decoded[(azimuth_block * 788) + 16 + (pixel * 12) + 4])));
-        block_reflectivity.push_back(*(reinterpret_cast<const uint16_t*>
               (&decoded[(azimuth_block * 788) + 16 + (pixel * 12) + 6])));
+        block_reflectivity.push_back(*(reinterpret_cast<const uint16_t*>
+              (&decoded[(azimuth_block * 788) + 16 + (pixel * 12) + 4])));
         block_noise_photons.push_back(*(reinterpret_cast<const uint16_t*>
-              (&decoded[(azimuth_block * 788) + 16 + (pixel * 12) + 10])));
+              (&decoded[(azimuth_block * 788) + 16 + (pixel * 12) + 8])));
       }
 
       range_mm.push_back(block_range_mm);

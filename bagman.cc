@@ -29,6 +29,7 @@ int main(int argc, char* argv[])
   gnss_socket->send("{\"op\":\"subscribe\",\"topic\": \
       \"/mavros/global_position/global\",\"type\":\"sensor_msgs/NavSatFix\"}");
 
+  size_t i, j, lidar_count = 0, imu_count = 0;
   imu_packetmsg imu_data;
   lidar_packetmsg lidar_data;
   navsatfixmsg gnss_data;
@@ -66,7 +67,7 @@ int main(int argc, char* argv[])
         });
 
     if (imu_updated)
-      std::cout << "IMU data:"
+      std::cout << "IMU packet " << (imu_count++) << ":"
         << "\n  diag time: " << imu_data.imu_diag_time_ns
         << "\n  acc read time: " << imu_data.acc_read_time_ns
         << "\n  gyro read time: " << imu_data.gyro_read_time_ns
@@ -79,14 +80,30 @@ int main(int argc, char* argv[])
         << std::endl;
 
     if (lidar_updated)
-      std::cout << "LiDAR data (block 0):"
-        << "\n  timestamp: " << lidar_data.timestamp[0]
-        << "\n  measurement ID: " << lidar_data.measurement_id[0]
-        << "\n  frame ID: " << lidar_data.frame_id[0]
-        << "\n  encoder count: " << lidar_data.encoder_count[0]
-        << "\n  azimuth status: "
-        << (lidar_data.azimuth_data_block_status[0] ? "Valid" : "Invalid")
-        << std::endl;
+    {
+      for (i = 0; i < 16; ++i)
+      {
+        std::cout << " LiDAR packet " << lidar_count
+          << " (azimuth block " << i << "):"
+          << "\n  timestamp: " << lidar_data.timestamp[i]
+          << "\n  measurement ID: " << lidar_data.measurement_id[i]
+          << "\n  frame ID: " << lidar_data.frame_id[i]
+          << "\n  encoder count: " << lidar_data.encoder_count[i]
+          << "\n  azimuth status: "
+          << (lidar_data.azimuth_data_block_status[i] ? "Valid" : "Invalid")
+          << std::endl;
+
+        for (j = 0; j < 64; ++j)
+        {
+          std::cout << "    data block: " << j
+            << ", rng: " << lidar_data.range_mm[i][j]
+            << ", S/N: " << lidar_data.signal_photons[i][j]
+            << " / " << lidar_data.noise_photons[i][j]
+            << std::endl;
+        }
+      }
+      ++lidar_count;
+    }
 
     if (gnss_updated)
       std::cout << "status: " << static_cast<int>(gnss_data.status)
